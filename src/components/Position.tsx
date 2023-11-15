@@ -1,9 +1,9 @@
-import { useDispatch } from 'react-redux';
-import { useAppSelector } from '../app/hooks';
-import { actions as positionActions } from '../features/position';
+import { delay } from '@reduxjs/toolkit/dist/utils';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import * as positionActions from '../features/position';
 
 export const Position = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { x, y } = useAppSelector(state => state.position);
 
   const moveLeft = () => dispatch(positionActions.moveLeft());
@@ -11,7 +11,9 @@ export const Position = () => {
   const moveUp = () => dispatch(positionActions.moveUp());
   const moveDown = () => dispatch(positionActions.moveDown());
 
-  const transformValue = `translate(${x * 100}%, ${y * 100}%)`;
+  const dance = () => dispatch(positionActions.doACircle(500));
+
+const transformValue = `translate(${x * 100}%, ${y * 100}%)`;
 
   return (
     <section className="position">

@@ -1,29 +1,68 @@
-type AddAction = { type: 'goods/ADD'; payload: string };
-type TakeAction = { type: 'goods/TAKE'; payload: string };
-type ClearAction = { type: 'goods/CLEAR' };
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchGoods } from '../services/api';
 
-type Action = AddAction | TakeAction | ClearAction;
- 
-const add = (good: string): AddAction => ({ type: 'goods/ADD', payload: good }); 
-const take = (good: string): TakeAction => ({ type: 'goods/TAKE', payload: good }); 
-const clear = (): ClearAction => ({ type: 'goods/CLEAR' });
+type GoodsState = {
+  goods: string[];
+  loading: boolean;
+  error: string;
+}
 
-export const actions = { add, take, clear };
-
-const goodsReducer = (goods: string[] = [], action: Action) => {
-  switch (action.type) {
-    case 'goods/ADD':
-      return [...goods, action.payload];
-    
-    case 'goods/TAKE':
-      return goods.filter(good => good !== action.payload);
-
-    case 'goods/CLEAR':
-      return [];
-
-    default:
-      return goods;
-  }  
+const initialState: GoodsState = {
+  goods: [],
+  loading: false,
+  error: '',
 };
 
-export default goodsReducer;
+const goodsSlice = createSlice({
+  name: 'goods',
+  initialState,
+  reducers: {
+    add: (state, action: PayloadAction<string>) => {
+      state.goods.push(action.payload);
+    },
+    take: (state, action: PayloadAction<string>) => {
+      state.goods = state.goods.filter(good => good !== action.payload);
+    },
+    clear: (state) => {
+      state.goods = [];
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(init.pending, (state) => {
+      state.loading = true;
+    });
+
+    builder.addCase(init.fulfilled, (state, action) => {
+      state.goods = action.payload;
+      state.loading = false;
+    });
+
+    builder.addCase(init.rejected, (state) => {
+      state.loading = false;
+      state.error = 'Error';
+    });
+  }
+});
+
+export const { add, take, clear } = goodsSlice.actions;
+export default goodsSlice.reducer;
+
+export const init = createAsyncThunk('goods/fetch', () => {
+  return fetchGoods();
+});
+// () => {
+//   return (dispatch: Dispatch) => {
+//     dispatch(setLoading(true));
+
+//     fetchGoods()
+//     .then(goodsFromServer => {
+//       dispatch(set(goodsFromServer));
+//     })
+//     .cattch(() => {
+//       dispatch(setError('Something went wrong'));
+//     })
+//     .finally(() => {
+//       dispatch(setLoading(false));
+//     })
+//   }; 
+// }
